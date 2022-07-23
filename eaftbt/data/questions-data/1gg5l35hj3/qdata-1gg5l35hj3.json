@@ -1,0 +1,11 @@
+{
+  "question_id" : "1gg5l35hj3",
+  "category" : "math",
+  "type" : "numerical_answer-field",
+  "details" :
+  {
+    "substitution_number" : 2,
+    "field_number" : 1,
+    "substitution_mark" : "|#|"
+  }
+}
