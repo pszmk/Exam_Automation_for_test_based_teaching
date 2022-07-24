@@ -7,5 +7,6 @@
     "substitution_number" : 2,
     "field_number" : 1,
     "substitution_mark" : "|#|"
-  }
+  },
+  "substitution_id_list" : ["000"]
 }
