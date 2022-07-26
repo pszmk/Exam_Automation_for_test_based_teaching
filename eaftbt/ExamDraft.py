@@ -7,7 +7,7 @@ class Question(ABC):
     '''
     Abstract class handling questions with general methods.
     '''
-    default_substitution = {"substitution_id": None, "substitution": []}
+    default_substitution = {"substitution_id": None, "substitution": [], "answer": []}
 
     def __init__(self, question_id):
         self.question_id = question_id
@@ -20,12 +20,11 @@ class Question(ABC):
         import json
         from pathlib import Path
         try:
-            with open(Path(__file__).parent / "data" / "questions-data" / "questions-data.json") as qsdata_json:
+            with open(Path(__file__).parent/"data"/"questions-data"/"questions-data.json") as qsdata_json:
                 qsdata = json.load(qsdata_json)
                 return self.question_id in qsdata["question_id_list"]
         except FileNotFoundError(f'Cannot find folder with data related with question: {self.question_id}.') as e:
             print(str(e.value))
-            # print(f'Cannot find folder with data related with question: {self.question_id}.')
 
     def check_substitution_id(self, substitution_id):
         if not self.is_question_id:
@@ -33,11 +32,57 @@ class Question(ABC):
         import json
         from pathlib import Path
         try:
-            with open(Path(__file__).parent / "data/questions-data" / f"{self.question_id}" / f"qdata-{self.question_id}.json") as qdata_json:
+            with open(Path(__file__).parent/"data"/"questions-data"/f"{self.question_id}"/f"qdata-{self.question_id}.json") as qdata_json:
                 qdata = json.load(qdata_json)
                 return substitution_id in qdata["substitution_id_list"]
         except FileNotFoundError(f'Cannot find folder with data related with question: {self.question_id}.') as e:
             print(str(e.value))
+    @abstractmethod
+    def set_substitution_by_id(self, substitution_id):
+        pass
+        # '''
+        # Set the substitution by reference to its unique id.
+        # '''
+        # if not self.is_question_id:
+        #     raise NoQuestionIdError("There is no question_id.")
+        # if not self.check_substitution_id(substitution_id):
+        #     raise ValueError("Wrong substitution id!")
+        #
+        # self.substitution["substitution_id"] = substitution_id
+        # import json
+        # from pathlib import Path
+        # try:
+        #     with open(Path(__file__).parent/"data"/"questions-data"/self.question_id/"sub-1gg5l35hj3"/f'latex-{self.substitution["substitution_id"]}-{self.question_id}.txt') as latex_substitution:
+        #         self.substitution["substitution"] = [line.strip() for line in latex_substitution if not line.startswith('#')]
+        #     with open(Path(__file__).parent/"data"/"questions-data"/self.question_id/"sub-1gg5l35hj3"/f'sdata-{self.substitution["substitution_id"]}-{self.question_id}.json') as sdata_json:
+        #         sdata = json.load(sdata_json)
+        #         self.substitution["answer"] = sdata["possible_answers"]
+        # except FileNotFoundError("File with substitution not found. Substitution was reset.") as e:
+        #     print(str(e.value))
+        #     self.reset_substitution()
+
+    @abstractmethod
+    def set_substitution_manually(self):
+        pass
+
+    def get_substitution(self):
+        return self.substitution["substitution"]
+
+    def reset_substitution(self):
+        self.substitution = self.default_substitution.copy()
+
+    def get_answer(self):
+        return self.substitution["answer"]
+
+
+class EmptyQuestion(Question):
+    # question_id = None
+
+    def set_substitution_manually(self):
+        pass
+
+
+class TryOutQuestion(Question):
 
     def set_substitution_by_id(self, substitution_id):
         '''
@@ -49,36 +94,21 @@ class Question(ABC):
             raise ValueError("Wrong substitution id!")
 
         self.substitution["substitution_id"] = substitution_id
+        import json
         from pathlib import Path
         try:
-            with open(Path(__file__).parent / "data" / "questions-data" / self.question_id / f'latex-{self.substitution["substitution_id"]}-{self.question_id}.txt') as latex_substitution:
-                self.substitution["substitution"] = [line.strip() for line in latex_substitution if not line.startswith('#')]
+            with open(
+                    Path(__file__).parent / "data" / "questions-data" / self.question_id / "sub-1gg5l35hj3" / f'latex-{self.substitution["substitution_id"]}-{self.question_id}.txt') as latex_substitution:
+                self.substitution["substitution"] = [line.strip() for line in latex_substitution if
+                                                     not line.startswith('#')]
+            with open(
+                    Path(__file__).parent / "data" / "questions-data" / self.question_id / "sub-1gg5l35hj3" / f'sdata-{self.substitution["substitution_id"]}-{self.question_id}.json') as sdata_json:
+                sdata = json.load(sdata_json)
+                self.substitution["answer"] = sdata["possible_answers"]
         except FileNotFoundError("File with substitution not found. Substitution was reset.") as e:
             print(str(e.value))
             self.reset_substitution()
 
-    def get_substitution(self):
-        return self.substitution
-
-    def reset_substitution(self):
-        self.substitution = self.default_substitution.copy()
-
-    def get_answer(self):
-        pass
-
-    @abstractmethod
-    def set_substitution_manually(self):
-        pass
-
-
-class EmptyQuestion(Question):
-    # question_id = None
-
-    def set_substitution_manually(self):
-        pass
-
-
-class TryOutQuestion(Question):
     def set_substitution_manually(self):
         pass
 

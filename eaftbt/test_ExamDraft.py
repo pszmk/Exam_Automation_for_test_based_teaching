@@ -22,7 +22,7 @@ question_id_test_1 = "1gg5l35hj3"
 #     assert var[0] is que
 
 def test_question_basic():
-    default_substitution = {"substitution_id": None, "substitution": []}
+    default_substitution = {"substitution_id": None, "substitution": [], "answer": []}
 
     with pytest.raises(NoQuestionIdError) as e:
         tq = TryOutQuestion("")
@@ -41,7 +41,17 @@ def test_question_basic():
     assert not tq.question_id == ""
     assert tq.substitution == default_substitution
 
-def test_check_substitution_id():
+
+def test_question_check_question_id():
+    tq = TryOutQuestion(question_id_test_1)
+    assert tq.question_id == question_id_test_1
+    assert tq.check_question_id()
+
+    tq.question_id = '4'
+    assert not tq.check_question_id()
+
+
+def test_question_check_substitution_id():
     tq = TryOutQuestion(question_id_test_1)
     tq.question_id = ""
     tq.is_question_id = False
@@ -60,9 +70,9 @@ def test_check_substitution_id():
     assert tq.check_substitution_id('000')
 
 
-def test_set_substitution_by_id():
-    default_substitution = {"substitution_id": None, "substitution": []}
-    substitution_000_question_1gg5l35hj3 = {"substitution_id" : "000", "substitution" : ['\\frac{2}{5}\\frac{3}{7}', '4']}
+def test_question_set_substitution_by_id():
+    default_substitution = {"substitution_id": None, "substitution": [], "answer": []}
+    substitution_000_question_1gg5l35hj3 = {"substitution_id" : "000", "substitution" : ['\\frac{2}{5}\\frac{3}{7}', '4'], "answer": ["0.666", "0.667"]}
 
     tq = TryOutQuestion(question_id_test_1)
     tq.is_question_id = False
@@ -88,15 +98,25 @@ def test_set_substitution_by_id():
 
 
 def test_question_get_substitution():
-    default_substitution = {"substitution_id": None, "substitution": []}
-    new_substitution = {"substitution_id": "000", "substitution": ["\\frac{2}{5}\\frac{3}{7}", "4"]}
+    default_substitution = {"substitution_id": None, "substitution": [], "answer": []}
+    substitution_000_question_1gg5l35hj3 = {"substitution_id": "000", "substitution": ['\\frac{2}{5}\\frac{3}{7}', '4'], "answer": ["0.666", "0.667"]}
     tq = TryOutQuestion(question_id_test_1)
-    assert tq.get_substitution() == default_substitution
+    assert tq.get_substitution() == default_substitution["substitution"]
 
     tq.set_substitution_by_id("000")
-    assert tq.get_substitution() == new_substitution
+    assert tq.get_substitution() == substitution_000_question_1gg5l35hj3["substitution"]
 
     tq.reset_substitution()
-    assert tq.get_substitution() == default_substitution
+    assert tq.get_substitution() == default_substitution["substitution"]
 
+def test_question_get_answer():
+    default_substitution = {"substitution_id": None, "substitution": [], "answer": []}
+    substitution_000_question_1gg5l35hj3 = {"substitution_id": "000", "substitution": ['\\frac{2}{5}\\frac{3}{7}', '4'], "answer": ["0.666", "0.667"]}
+    tq = TryOutQuestion(question_id_test_1)
+    assert tq.get_answer() == default_substitution["answer"]
 
+    tq.set_substitution_by_id("000")
+    assert tq.get_answer() == substitution_000_question_1gg5l35hj3["answer"]
+
+    tq.reset_substitution()
+    assert tq.get_answer() == default_substitution["answer"]
