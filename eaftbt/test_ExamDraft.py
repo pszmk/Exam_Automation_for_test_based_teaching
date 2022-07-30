@@ -2,6 +2,38 @@ import pytest
 from eaftbt.ExamDraft import ExamDraft, TryOutQuestion, NoQuestionIdError
 
 question_id_test_1 = "1gg5l35hj3"
+exam_id_test_1 = "yyisjdfsd7544"
+
+def test_exam_draft_basic():
+    ed = ExamDraft(None)
+    assert ed.exam_id == None
+
+    ed.exam_id = exam_id_test_1
+    assert ed.exam_id == exam_id_test_1
+
+    ed = ExamDraft(None)
+    assert ed.exam_id == None
+
+    ed = ExamDraft(exam_id_test_1)
+    assert ed.exam_id == exam_id_test_1
+
+    tq1 = TryOutQuestion(question_id_test_1)
+    tq2 = TryOutQuestion(question_id_test_1)
+    tq2.set_substitution_by_id("000")
+    ed.add_question(tq1)
+    ed.add_question(tq2)
+    assert ed.questions == [tq1, tq2]
+
+    tq3 = TryOutQuestion(question_id_test_1)
+    ed.add_question(tq3)
+    assert ed.questions == [tq1, tq2, tq3]
+
+    ed.questions[2].set_substitution_by_id("000")
+    assert ed.questions == [tq1, tq2, tq3]
+    assert tq3.substitution == {"substitution_id" : "000", "substitution" : ['\\frac{2}{5}\\frac{3}{7}', '4'], "answer": ["0.666", "0.667"]}
+
+    ed.remove_question(0)
+    assert ed.questions == [tq2, tq3]
 
 # def test_exam_draft_basic():
 #     exd = ExamDraft()
