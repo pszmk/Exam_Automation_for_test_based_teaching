@@ -23,7 +23,7 @@ class Question(ABC):
             with open(Path(__file__).parent/"data"/"questions-data"/"questions-data.json") as qsdata_json:
                 qsdata = json.load(qsdata_json)
                 return self.question_id in qsdata["question_id_list"]
-        except FileNotFoundError(f'Cannot find folder with data related with question: {self.question_id}.') as e:
+        except FileNotFoundError(f'Cannot find folder with data related with questions including: {self.question_id}.') as e:
             print(str(e.value))
 
     def get_text(self):
@@ -99,26 +99,36 @@ class TryOutQuestion(Question):
 
 class ExamDraft:
     questions = []
-
+    exam_draft = {}
     def __init__(self, exam_id):
+        # if not check_exam_draft_id
+        #     raise there is no such exam_draft_id
+        #     if means that there are no such same question and totally same exam groups
+        #     the possibility of such issue seems rather rare as we will be creating
         self.exam_id = exam_id
+
+    def check_exam_draft_id(self):
         pass
 
     def get_exam_id(self):
         return self.exam_id
 
     def add_question(self, question):
-        # if type(question) is not right:
-        #     raise cos tam error
+        if not isinstance(question, Question):
+            raise ValueError("The object provided is not of Question class.")
+
         self.questions.append(question)
 
     def remove_question(self, question_index):
+        if question_index not in range(len(self.questions)):
+            raise ValueError("Provided question_index is not within the expected range.")
         self.questions.pop(question_index)
 
     def get_exam_draft(self):
         pass
 
     def save_exam_draft(self):
+        # if thre is already existing file with given id
         pass
 
     def import_exam_draft(self):
@@ -164,3 +174,8 @@ if __name__ == '__main__':
     ed.questions[2].set_substitution_by_id("000")
     print(ed.questions == [tq1, tq2, tq3])
     print(tq3.substitution == {"substitution_id" : "000", "substitution" : ['\\frac{2}{5}\\frac{3}{7}', '4'], "answer": ["0.666", "0.667"]})
+
+    print(str(type(tq3)))
+    print(str(type(tq3)).split(sep='.'))
+    print(isinstance(tq3, Question))
+    print(isinstance(tq3, TryOutQuestion))

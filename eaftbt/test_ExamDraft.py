@@ -5,6 +5,7 @@ question_id_test_1 = "1gg5l35hj3"
 exam_id_test_1 = "yyisjdfsd7544"
 
 def test_exam_draft_basic():
+    from copy import copy
     ed = ExamDraft(None)
     assert ed.exam_id == None
 
@@ -16,6 +17,12 @@ def test_exam_draft_basic():
 
     ed = ExamDraft(exam_id_test_1)
     assert ed.exam_id == exam_id_test_1
+
+    '''
+    What I do here seems kinda dumb because I am creating direct copies of objects meaning that I all of them are 
+    modified once I modify one of them. In real case scenario we will be passing deep copies of objects meaning that 
+    they have the same content, but are separate object not just references to original objects.
+    '''
 
     tq1 = TryOutQuestion(question_id_test_1)
     tq2 = TryOutQuestion(question_id_test_1)
@@ -34,6 +41,31 @@ def test_exam_draft_basic():
 
     ed.remove_question(0)
     assert ed.questions == [tq2, tq3]
+
+
+def test_exam_draft_raise_errors():
+    ed = ExamDraft(exam_id_test_1)
+
+    with pytest.raises(NoQuestionIdError) as e:
+        ed.add_question(TryOutQuestion(''))
+    assert str(e.value) == "Provided question_id is not valid."
+    assert e.type == NoQuestionIdError
+
+    assert len(ed.questions) == 0
+
+    with pytest.raises(ValueError) as e:
+        ed.add_question('dfjfjd')
+    assert str(e.value) == "The object provided is not of Question class."
+    assert e.type == ValueError
+
+    assert len(ed.questions) == 0
+
+    ed.add_question(TryOutQuestion(question_id_test_1))
+    with pytest.raises(ValueError) as e:
+        ed.remove_question(5)
+    assert str(e.value) == "Provided question_index is not within the expected range."
+    assert e.type == ValueError
+
 
 # def test_exam_draft_basic():
 #     exd = ExamDraft()
