@@ -2,11 +2,25 @@
   "exam_id_list": [],
   "exam_groups": {
     "sq0": {
-      "ts0_0": [],
-      "ts0_1": []
+      "ts0_0":
+      {
+        "exam_id_list": [],
+        "questions_data":
+        [
+          {"question_id": "1gg5l35hj3", "template_id": "0", "substitution_id": "000"}
+        ]
+      },
+      "ts0_1":
+      {
+
+      }
     },
-    "sq1": {
-      "ts1_0": []
+    "sq1":
+    {
+      "ts1_0":
+      {
+
+      }
     }
   }
 }

@@ -1,0 +1,5 @@
+pathlib~=1.0.1
+Jinja2~=3.1.2
+pytest~=7.1.2
+eaftbt~=1.0
+setuptools~=44.0.0

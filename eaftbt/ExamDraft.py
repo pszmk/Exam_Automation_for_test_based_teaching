@@ -3,6 +3,9 @@ from abc import ABC, abstractmethod
 class NoQuestionIdError(BaseException):
     pass
 
+class UsedExamIdError(BaseException):
+    pass
+
 class Question(ABC):
     '''
     Abstract class handling questions with general methods.
@@ -15,6 +18,7 @@ class Question(ABC):
         if not self.is_question_id:
             raise NoQuestionIdError("Provided question_id is not valid.")
         self.substitution = self.default_substitution.copy()
+        self.text = None
 
     def check_question_id(self):
         import json
@@ -26,8 +30,25 @@ class Question(ABC):
         except FileNotFoundError(f'Cannot find folder with data related with questions including: {self.question_id}.') as e:
             print(str(e.value))
 
+    def set_text(self, template_id="0"):
+        from pathlib import Path
+        from jinja2 import Environment, FileSystemLoader
+        try:
+            with open(Path("data") / "questions-data" / self.question_id / f"templates-{self.question_id}"/f"latextemplate-{template_id}-{self.question_id}.tex") as x:
+                env = Environment(
+                    variable_start_string='\VAR{',
+                    variable_end_string='}',
+                    loader=FileSystemLoader(Path("data") / "questions-data" / self.question_id / f"templates-{self.question_id}"))
+                template = env.get_template(f"latextemplate-{template_id}-{self.question_id}.tex")
+                self.text = template.render(substitution=self.substitution['substitution'])
+        except FileNotFoundError(f'Cannot find folder with templates related with question: {self.question_id}.') as e:
+            print(str(e.value))
+
     def get_text(self):
-        pass
+        return self.text
+
+    # def get_example(self, example_id):
+    #     pass
 
     def check_substitution_id(self, substitution_id):
         if not self.is_question_id:
@@ -42,7 +63,7 @@ class Question(ABC):
             print(str(e.value))
 
     @abstractmethod
-    def set_substitution_by_id(self, substitution_id):
+    def set_substitution_by_id(self, substitution_id="000"):
         pass
 
     @abstractmethod
@@ -59,16 +80,9 @@ class Question(ABC):
         return self.substitution["answer"]
 
 
-# class EmptyQuestion(Question):
-#     question_id = None
-    #
-    # def set_substitution_manually(self):
-    #     pass
-
-
 class TryOutQuestion(Question):
 
-    def set_substitution_by_id(self, substitution_id):
+    def set_substitution_by_id(self, substitution_id="000"):
         '''
         Set the substitution by reference to its unique id.
         '''
@@ -100,15 +114,21 @@ class TryOutQuestion(Question):
 class ExamDraft:
     questions = []
     exam_draft = {}
-    def __init__(self, exam_id):
-        # if not check_exam_draft_id
-        #     raise there is no such exam_draft_id
-        #     if means that there are no such same question and totally same exam groups
-        #     the possibility of such issue seems rather rare as we will be creating
+    def __init__(self, exam_set_id, exam_id):
+        self.exam_set_id = exam_set_id
         self.exam_id = exam_id
+        if self.check_exam_id():
+            raise UsedExamIdError(f"The exam_id: {self.exam_id} is already used.")
 
-    def check_exam_draft_id(self):
-        pass
+    def check_exam_id(self):
+        import json
+        from pathlib import Path
+        try:
+            with open(Path('data')/'exam_sets-data'/self.exam_set_id/f'esdata-{self.exam_set_id}.json', 'r') as esdata_json:
+                esdata = json.load(esdata_json)
+                return self.exam_id in esdata['exam_id_list']
+        except FileNotFoundError(f"File with data related with exam_set: {self.exam_set_id} not found.") as e:
+            print(str(e.value))
 
     def get_exam_id(self):
         return self.exam_id
@@ -122,22 +142,20 @@ class ExamDraft:
     def remove_question(self, question_index):
         if question_index not in range(len(self.questions)):
             raise ValueError("Provided question_index is not within the expected range.")
+
         self.questions.pop(question_index)
 
-    def get_exam_draft(self):
-        pass
+    # def get_exam_draft(self):
+    #     pass
 
     def save_exam_draft(self):
-        # if thre is already existing file with given id
         pass
 
     def import_exam_draft(self):
         pass
 
-    # def
-    # def get_variant(self, seed: str):
-    #     return []
-
+    def get_questions_text(self):
+        return [one_question.get_text() for one_question in self.questions]
 
 if __name__ == '__main__':
     '''
@@ -150,32 +168,65 @@ if __name__ == '__main__':
     print(Path(__file__).parent)
     print(Path(__file__).parent.parent / "data")
     '''
-    Pre-testing EmptyQuestion 
+    Trying out jinja2
     '''
-    dd = TryOutQuestion("1gg5l35hj3")
-    print(str(type(dd)))
-
     question_id_test_1 = "1gg5l35hj3"
-    exam_id_test_1 = "yyisjdfsd7544"
+    tq = TryOutQuestion(question_id_test_1)
+    tq.set_substitution_by_id('000')
+    # print(tq.get_substitution()[0])
+    from pathlib import Path
+    from jinja2 import Environment, FileSystemLoader
+    templates_path = Path('data') / 'questions-data' / '1gg5l35hj3' / 'templates-1gg5l35hj3'
 
-    tq1 = TryOutQuestion(question_id_test_1)
-    tq2 = TryOutQuestion(question_id_test_1)
-    tq2.set_substitution_by_id("000")
-    ed = ExamDraft(exam_id_test_1)
-    ed.add_question(tq1)
-    ed.add_question(tq2)
-    # assert ed.questions == [tq1, tq2]
-    print(ed.questions == [tq1, tq2])
+    latex_jinja_env = Environment(
+        variable_start_string='\VAR{',
+        variable_end_string='}',
+        loader=FileSystemLoader(templates_path)
+    )
 
-    tq3 = TryOutQuestion(question_id_test_1)
-    ed.add_question(tq3)
-    print(ed.questions == [tq1, tq2, tq3])
+    # latex_template = latex_jinja_env.get_template('latextemplate-0-1gg5l35hj3.tex')
+    # print(latex_template.render({'value0':tq.get_substitution()[0], 'value1':tq.get_substitution()[1], 'value2':tq.get_substitution()[2]}))
+    # dkd = latex_template.render({'value0':tq.get_substitution()[0], 'value1':tq.get_substitution()[1], 'value2':tq.get_substitution()[2]})
+    # with open(Path('data') / 'exam_sets-data' / 'q0l67rgm5' / 'tmp.tex', 'w') as latex_out:
+    #     latex_out.write(dkd)
 
-    ed.questions[2].set_substitution_by_id("000")
-    print(ed.questions == [tq1, tq2, tq3])
-    print(tq3.substitution == {"substitution_id" : "000", "substitution" : ['\\frac{2}{5}\\frac{3}{7}', '4'], "answer": ["0.666", "0.667"]})
+    ''''''
+    # import json
+    # from pathlib import Path
+    # exam_id = 'ii'
+    # try:
+    #     with open(Path('data') / 'exam_sets-data' / 'q0l67rgm5' / f'esdata-q0l67rgm5.json',
+    #               'r') as esdata_json:
+    #         esdata = json.load(esdata_json)
+    #         print(esdata)
+    #         print(exam_id in esdata['exam_id_list'])
+    # except FileNotFoundError("File with data related with exam_sets not found.") as e:
+    #     print(str(e.value))
+    #
+    # ed = ExamDraft('q0l67rgm5', 'erer')
+    # print(ed.questions)
+    # print(len(ed.questions))
 
-    print(str(type(tq3)))
-    print(str(type(tq3)).split(sep='.'))
-    print(isinstance(tq3, Question))
-    print(isinstance(tq3, TryOutQuestion))
+    # es = ExamSet('q0l67rgm5')
+    # es2 = ExamSet('eees')
+    # print(es.get_exam_set_id())
+    # print(es.check_exam_set_id())
+    # print(es2.check_exam_set_id())
+    question_id_test_1 = "1gg5l35hj3"
+    # with Environment(variable_start_string='\VAR{', variable_end_string='}', loader=FileSystemLoader(Path("data") / "questions-data" / question_id_test_1 / f"templates-{question_id_test_1}")) as env:
+    #     template = env.get_template(f"latextemplate-{'0'}-{question_id_test_1}.tex")
+    #     text = template.render(substitution=['1','3'])
+    #     print(text)
+
+    # env = Environment(variable_start_string='\VAR{', variable_end_string='}', loader=FileSystemLoader(Path("data") / "questions-data" / question_id_test_1 / f"templates-{question_id_test_1}"))
+    # with Environment(variable_start_string='\VAR{', variable_end_string='}', loader=FileSystemLoader(Path("data") / "questions-data" / question_id_test_1 / f"templates-{question_id_test_1}")) as env:
+    #     template = env.get_template(f'latextemplate-0-{question_id_test_1}.tex')
+    #     print(template.render(substitution=['1', '3']))
+    # template = env.get_template(f'latextemplate-0-{question_id_test_1}.tex')
+    tq = TryOutQuestion(question_id_test_1)
+    tq.set_substitution_by_id()
+    print(tq.get_substitution())
+    tq.set_text()
+    print(tq.get_text())
+    with open(Path("data")/"playground"/"mikos2.tex", "w") as mikos2_file:
+        mikos2_file.write(tq.get_text())

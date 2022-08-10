@@ -1,0 +1,27 @@
+\documentclass[a4paper, 10pt]{exam}
+\usepackage{qrcode}
+\usepackage[a4paper, total={7in, 8.5in}]{geometry}
+
+\begin{document}
+
+    \header{\bfseries\large \VAR{course_substitution}\\ \VAR{professor_substitution}}
+    {\bfseries\large \VAR{exam_title_substitution}\\ \VAR{subtitle_substitution}}
+    {\qrcode{\VAR{qrcode_data_substitution}}}
+
+\begin{center}
+    \vspace{0.3in}
+    \makebox[0.45\textwidth]{\makebox[0.1\textwidth]{First Name}\enspace\hrulefill}\enspace\makebox[0.45\textwidth]{\makebox[0.1\textwidth]{Last Name}\enspace\hrulefill}\vspace{0.2in}
+    \makebox[0.45\textwidth]{\makebox[0.1\textwidth]{Student id}\enspace\hrulefill}\enspace\makebox[0.45\textwidth]{\makebox[0.1\textwidth]{Date}\enspace\hrulefill}
+    \vspace{0.2in}
+
+    \fbox{\parbox{5.5in}{\centering Answer the questions in the spaces provided below the questions. \\In case of correction of an answer cross out previous one.}}
+\end{center}
+
+\begin{questions}
+{% for one_question_content in questions_substitution %}
+    \question{\VAR{one_question_content}}\vspace{0.05in}\newline
+    \fbox{\makebox[\textwidth]{\parbox[c][1in]{7in}{}}}
+{% endfor %}
+\end{questions}
+
+\end{document}
