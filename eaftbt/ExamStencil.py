@@ -3,6 +3,8 @@ from eaftbt import data
 from jinja2 import FileSystemLoader, Environment
 from pathlib import PurePath, Path
 
+path_eaftbt_data = Path(__file__).parent / "data"
+
 class NoQuestionError(BaseException):
     pass
 
@@ -11,16 +13,17 @@ class NoExamDraftError(BaseException):
 
 class ExamStencil:
     # output_path = ''
-    default_template_path = Path('user-data')
-    exam_template_substitution = {"course_substitution": 'Math 115',
+    default_template_path = Path(__file__).parent/'user-data'
+    default_exam_template_substitution = {"course_substitution": 'Math 115',
                                   "professor_substitution": 'Professor Hilbert',
                                   "exam_title_substitution": 'First Exam 2022',
                                   "qrcode_data_substitution": 'tutaj znajduja sie informacje co do tego gdzie wyslac wyniki',
                                   "subtitle_substitution": 'Dzielenie'}
-    question = None
-    exam_draft = None
 
     def __init__(self, path=default_template_path):
+        self.question = None
+        self.exam_draft = None
+        self.exam_template_substitution = self.default_exam_template_substitution
         if "user-data" not in Path(path).parts:
             raise ValueError("The path is not valid.")
         self.path = path
@@ -43,7 +46,7 @@ class ExamStencil:
             exam_env = Environment(
                 variable_start_string='\VAR{',
                 variable_end_string='}',
-                loader=FileSystemLoader(Path('data') / 'exam_stencil-data' / 'templates')
+                loader=FileSystemLoader(path_eaftbt_data / 'exam_stencil-data' / 'templates')
             )
 
             exam_template = exam_env.get_template(f'exam_template-{exam_template_id}.tex')
@@ -72,7 +75,7 @@ class ExamStencil:
         exam_env = Environment(
             variable_start_string='\VAR{',
             variable_end_string='}',
-            loader=FileSystemLoader(Path('data') / 'exam_stencil-data' / 'templates')
+            loader=FileSystemLoader(path_eaftbt_data/'exam_stencil-data'/'templates')
         )
 
         exam_template = exam_env.get_template(f'exam_template-{exam_template_id}.tex')
@@ -131,12 +134,12 @@ if __name__ == "__main__":
     #                                          "questions_substitution":questions})))
     # doc.generate_pdf(filepath=Path("data")/"playground"/"doc")
 
-    # es = ExamStencil(Path("data") / "user-data" / "playground")
-    # tq = TryOutQuestion('1gg5l35hj3')
-    # tq.set_substitution_by_id()
-    # tq.set_text()
+    es = ExamStencil(Path("data") / "user-data" / "playground")
+    tq = TryOutQuestion('1gg5l35hj3')
+    tq.set_substitution_by_id()
+    tq.set_text()
     # print(tq.get_text())
-    # es.set_question(tq)
+    es.set_question(tq)
     #
     # p/rint(es.question.get_text())
     # print(es.generate_question_tex(save=True))
@@ -145,15 +148,15 @@ if __name__ == "__main__":
     # import os
     # os.system(f"pdflatex {Path('data')/'playground'/'es_question_tmp.tex'}")
 
-    # from copy import copy
+    from copy import copy
 
-    # ed = ExamDraft("q0l67rgm5", "trgf")
-    # ed.add_question(copy(tq))
-    # ed.add_question(copy(tq))
+    ed = ExamDraft("q0l67rgm5", "trgf")
+    ed.add_question(copy(tq))
+    ed.add_question(copy(tq))
     # print(ed.get_questions_text())
-    # es.set_exam_draft(copy(ed))
+    es.set_exam_draft(copy(ed))
     # print(es.generate_exam_draft_tex())
-    # es.generate_exam_draft_tex(save=True)
+    es.generate_exam_draft_tex(filename="jkl", save=True)
 
-    print(Path("data"))
-    print([str(item).split(sep='/')[-1] for item in Path("data").iterdir()])
+    # print(Path("data"))
+    # print([str(item).split(sep='/')[-1] for item in Path("data").iterdir()])

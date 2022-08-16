@@ -1,4 +1,8 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
+
+path_eaftbt_data = Path(__file__).parent / "data"
+# path_user_data =
 
 class NoQuestionIdError(BaseException):
     pass
@@ -20,25 +24,26 @@ class Question(ABC):
         self.substitution = self.default_substitution.copy()
         self.text = None
 
+
     def check_question_id(self):
         import json
-        from pathlib import Path
+        # from pathlib import Path
         try:
-            with open(Path(__file__).parent/"data"/"questions-data"/"questions-data.json") as qsdata_json:
+            with open(path_eaftbt_data/"questions-data"/"questions-data.json") as qsdata_json:
                 qsdata = json.load(qsdata_json)
                 return self.question_id in qsdata["question_id_list"]
         except FileNotFoundError(f'Cannot find folder with data related with questions including: {self.question_id}.') as e:
             print(str(e.value))
 
     def set_text(self, template_id="0"):
-        from pathlib import Path
+        # from pathlib import Path
         from jinja2 import Environment, FileSystemLoader
         try:
-            with open(Path("data") / "questions-data" / self.question_id / f"templates-{self.question_id}"/f"latextemplate-{template_id}-{self.question_id}.tex") as x:
+            with open(path_eaftbt_data / "questions-data" / self.question_id / f"templates-{self.question_id}"/f"latextemplate-{template_id}-{self.question_id}.tex") as x:
                 env = Environment(
                     variable_start_string='\VAR{',
                     variable_end_string='}',
-                    loader=FileSystemLoader(Path("data") / "questions-data" / self.question_id / f"templates-{self.question_id}"))
+                    loader=FileSystemLoader(path_eaftbt_data / "questions-data" / self.question_id / f"templates-{self.question_id}"))
                 template = env.get_template(f"latextemplate-{template_id}-{self.question_id}.tex")
                 self.text = template.render(substitution=self.substitution['substitution'])
         except FileNotFoundError(f'Cannot find folder with templates related with question: {self.question_id}.') as e:
@@ -56,7 +61,7 @@ class Question(ABC):
         import json
         from pathlib import Path
         try:
-            with open(Path(__file__).parent/"data"/"questions-data"/f"{self.question_id}"/f"qdata-{self.question_id}.json") as qdata_json:
+            with open(path_eaftbt_data/"questions-data"/f"{self.question_id}"/f"qdata-{self.question_id}.json") as qdata_json:
                 qdata = json.load(qdata_json)
                 return substitution_id in qdata["substitution_id_list"]
         except FileNotFoundError(f'Cannot find folder with data related with question: {self.question_id}.') as e:
@@ -93,14 +98,14 @@ class TryOutQuestion(Question):
 
         self.substitution["substitution_id"] = substitution_id
         import json
-        from pathlib import Path
+        # from pathlib import Path
         try:
             with open(
-                    Path(__file__).parent / "data" / "questions-data" / self.question_id / "sub-1gg5l35hj3" / f'latex-{self.substitution["substitution_id"]}-{self.question_id}.txt') as latex_substitution:
+                    path_eaftbt_data/ "questions-data" / self.question_id / "sub-1gg5l35hj3" / f'latex-{self.substitution["substitution_id"]}-{self.question_id}.txt') as latex_substitution:
                 self.substitution["substitution"] = [line.strip() for line in latex_substitution if
                                                      not line.startswith('#')]
             with open(
-                    Path(__file__).parent / "data" / "questions-data" / self.question_id / "sub-1gg5l35hj3" / f'sdata-{self.substitution["substitution_id"]}-{self.question_id}.json') as sdata_json:
+                    path_eaftbt_data/ "questions-data" / self.question_id / "sub-1gg5l35hj3" / f'sdata-{self.substitution["substitution_id"]}-{self.question_id}.json') as sdata_json:
                 sdata = json.load(sdata_json)
                 self.substitution["answer"] = sdata["possible_answers"]
         except FileNotFoundError("File with substitution not found. Substitution was reset.") as e:
@@ -112,9 +117,9 @@ class TryOutQuestion(Question):
 
 
 class ExamDraft:
-    questions = []
-    exam_draft = {}
     def __init__(self, exam_set_id, exam_id):
+        self.questions = []
+        self.exam_draft = {}
         self.exam_set_id = exam_set_id
         self.exam_id = exam_id
         if self.check_exam_id():
@@ -122,9 +127,9 @@ class ExamDraft:
 
     def check_exam_id(self):
         import json
-        from pathlib import Path
+        # from pathlib import Path
         try:
-            with open(Path('data')/'exam_sets-data'/self.exam_set_id/f'esdata-{self.exam_set_id}.json', 'r') as esdata_json:
+            with open(path_eaftbt_data/"user-data"/'exam_sets-data'/self.exam_set_id/f'esdata-{self.exam_set_id}.json', 'r') as esdata_json:
                 esdata = json.load(esdata_json)
                 return self.exam_id in esdata['exam_id_list']
         except FileNotFoundError(f"File with data related with exam_set: {self.exam_set_id} not found.") as e:
@@ -157,6 +162,10 @@ class ExamDraft:
     def get_questions_text(self):
         return [one_question.get_text() for one_question in self.questions]
 
+def compare_paths():
+    from pathlib import Path
+    return Path(__file__)
+
 if __name__ == '__main__':
     '''
     Trying out Path from pathlib which will be used temporarily to handle file manipulation
@@ -176,7 +185,7 @@ if __name__ == '__main__':
     # print(tq.get_substitution()[0])
     from pathlib import Path
     from jinja2 import Environment, FileSystemLoader
-    templates_path = Path('data') / 'questions-data' / '1gg5l35hj3' / 'templates-1gg5l35hj3'
+    templates_path = Path(__file__).parent/'data' / 'questions-data' / '1gg5l35hj3' / 'templates-1gg5l35hj3'
 
     latex_jinja_env = Environment(
         variable_start_string='\VAR{',
@@ -228,5 +237,5 @@ if __name__ == '__main__':
     print(tq.get_substitution())
     tq.set_text()
     print(tq.get_text())
-    with open(Path("data")/"playground"/"mikos2.tex", "w") as mikos2_file:
+    with open(Path("data")/"user-data"/"playground"/"mikos2.tex", "w") as mikos2_file:
         mikos2_file.write(tq.get_text())
